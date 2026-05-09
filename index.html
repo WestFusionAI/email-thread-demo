@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マネージャーの時間を取り戻す AI — WEST FUSION AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;500;700&family=Noto+Sans+JP:wght@300;400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0e1620;
+  --bg-section: #131e2c;
+  --bg-card: #1a2638;
+  --bg-elevated: #233044;
+  --line: #2c3a52;
+  --line-soft: #1f2b3e;
+  --text-primary: #e8ecf2;
+  --text-secondary: #a8b4c6;
+  --text-tertiary: #6b7891;
+  --accent: #d4a458;
+  --accent-soft: rgba(212, 164, 88, 0.14);
+  --accent-line: rgba(212, 164, 88, 0.3);
+  --status-done: #5a8a6b;
+  --status-pending: #c79b50;
+  --status-overdue: #b56560;
+  --status-info: #5d7a9f;
+  --serif: 'Noto Serif JP', 'Yu Mincho', serif;
+  --sans: 'Noto Sans JP', 'Yu Gothic', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
+  --plex: 'IBM Plex Sans', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: var(--sans);
+  font-weight: 300;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* ========== HEADER ========== */
+header.page-header {
+  padding: 64px 32px 32px;
+  text-align: center;
+  border-bottom: 1px solid var(--line-soft);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(212, 164, 88, 0.08), transparent 60%),
+    var(--bg-deep);
+}
+
+.page-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.page-title {
+  font-family: var(--serif);
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+  max-width: 880px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.page-title .accent {
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ========== DEMO CONTAINER ========== */
+.demo-section {
+  padding: 48px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.demo-container {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  aspect-ratio: 16 / 10;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+/* ========== SCENE BASE ========== */
+.scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+
+.scene.active { opacity: 1; pointer-events: auto; }
+
+.scene-label {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+.scene-counter {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+}
+
+/* ========== SCENE 0: TITLE ========== */
+.scene-0 {
+  background: 
+    radial-gradient(ellipse at 30% 30%, rgba(212, 164, 88, 0.12), transparent 60%),
+    radial-gradient(ellipse at 70% 70%, rgba(93, 122, 159, 0.1), transparent 60%);
+}
+
+.scene-0 .title-mega {
+  font-family: var(--serif);
+  font-size: clamp(28px, 4.5vw, 56px);
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+
+.scene-0 .title-mega .accent {
+  color: var(--accent);
+  font-style: italic;
+}
+
+.scene-0 .subtitle {
+  font-family: var(--plex);
+  font-size: clamp(13px, 1.5vw, 18px);
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+.scene-0.active .title-mega {
+  animation: titleReveal 1.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.scene-0.active .subtitle {
+  animation: titleReveal 1.4s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes titleReveal {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== SCENE 1: WHY 課長 ========== */
+.scene-1 .org-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+  width: 100%;
+  max-width: 720px;
+}
+
+.scene-1 .scene-1-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.scene-1 .scene-1-title .accent {
+  color: var(--accent);
+}
+
+.org-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.org-box {
+  padding: 14px 28px;
+  border: 1px solid var(--line);
+  background: var(--bg-elevated);
+  text-align: center;
+  position: relative;
+  font-family: var(--plex);
+  font-size: 13px;
+  color: var(--text-secondary);
+  min-width: 200px;
+  border-radius: 2px;
+}
+
+.org-box.role-name { font-weight: 500; }
+.org-box.role-info { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+.org-box.highlight {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  transform: scale(1.08);
+  box-shadow: 0 8px 24px rgba(212, 164, 88, 0.15);
+}
+
+.org-box.highlight::before {
+  content: '◆ 情報が最も集中';
+  position: absolute;
+  top: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.email-flow {
+  position: absolute;
+  font-size: 16px;
+  color: var(--accent);
+  opacity: 0;
+}
+
+.scene-1.active .org-box.role-1 { animation: fadeInRow 0.5s 0.2s both; }
+.scene-1.active .org-box.role-2 { animation: fadeInRow 0.5s 0.4s both, highlightPulse 1.6s 1.2s ease-in-out; }
+.scene-1.active .org-box.role-3 { animation: fadeInRow 0.5s 0.6s both; }
+
+.scene-1.active .info-arrow-1 { animation: arrowFlow 1.6s 0.9s ease-in-out both; }
+.scene-1.active .info-arrow-2 { animation: arrowFlow 1.6s 1.1s ease-in-out both; }
+.scene-1.active .info-arrow-3 { animation: arrowFlow 1.6s 1.3s ease-in-out both; }
+
+@keyframes fadeInRow {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes highlightPulse {
+  0%, 100% { box-shadow: 0 8px 24px rgba(212, 164, 88, 0.15); }
+  50% { box-shadow: 0 8px 36px rgba(212, 164, 88, 0.4); }
+}
+
+@keyframes arrowFlow {
+  0% { opacity: 0; transform: translateX(-100px); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(100px); }
+}
+
+/* ========== SCENE 2: OUTLOOK ========== */
+.scene-2 { padding: 0; }
+
+.outlook-window {
+  width: 92%;
+  height: 88%;
+  background: #fff;
+  color: #2d3748;
+  border-radius: 6px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.outlook-titlebar {
+  background: #0078d4;
+  color: #fff;
+  padding: 8px 14px;
+  font-family: var(--plex);
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.outlook-titlebar-left { display: flex; align-items: center; gap: 8px; }
+.outlook-titlebar-icon {
+  width: 16px; height: 16px;
+  background: #fff;
+  color: #0078d4;
+  border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 10px;
+}
+
+.outlook-counter {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: rgba(255,255,255,0.2);
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.outlook-toolbar {
+  background: #f3f2f1;
+  border-bottom: 1px solid #e1dfdd;
+  padding: 6px 14px;
+  font-family: var(--plex);
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.outlook-list {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.outlook-mail {
+  display: grid;
+  grid-template-columns: 18px 130px 1fr 70px;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #edebe9;
+  font-family: var(--plex);
+  font-size: 11px;
+  align-items: center;
+  background: #fff;
+  position: relative;
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.outlook-mail.unread { font-weight: 600; }
+.outlook-mail.unread::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 28px;
+  background: #0078d4;
+  border-radius: 2px;
+}
+
+.outlook-mail .from { color: #1f2937; }
+.outlook-mail .subject { color: #4b5563; }
+.outlook-mail .time { color: #9ca3af; font-size: 10px; text-align: right; }
+.outlook-mail .imp {
+  width: 12px; height: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px;
+  color: #ca8a04;
+}
+
+.scene-2.active .outlook-mail {
+  animation: mailDropIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.scene-2.active .outlook-mail:nth-child(1) { animation-delay: 0.3s; }
+.scene-2.active .outlook-mail:nth-child(2) { animation-delay: 0.7s; }
+.scene-2.active .outlook-mail:nth-child(3) { animation-delay: 1.0s; }
+.scene-2.active .outlook-mail:nth-child(4) { animation-delay: 1.4s; }
+.scene-2.active .outlook-mail:nth-child(5) { animation-delay: 1.8s; }
+.scene-2.active .outlook-mail:nth-child(6) { animation-delay: 2.2s; }
+.scene-2.active .outlook-mail:nth-child(7) { animation-delay: 2.6s; }
+.scene-2.active .outlook-mail:nth-child(8) { animation-delay: 3.0s; }
+.scene-2.active .outlook-mail:nth-child(9) { animation-delay: 3.4s; }
+
+@keyframes mailDropIn {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.scene-2.active .outlook-counter-num { animation: counterUp 4.5s ease-out both; }
+
+@keyframes counterUp {
+  0% { color: #fff; }
+  20%, 100% { color: #ffd166; transform: scale(1.05); }
+}
+
+/* ========== SCENE 3: TEAMS ========== */
+.scene-3 { padding: 0; }
+
+.teams-window {
+  width: 92%;
+  height: 88%;
+  background: #fff;
+  color: #2d3748;
+  border-radius: 6px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.teams-titlebar {
+  background: #5b5fc7;
+  color: #fff;
+  padding: 8px 14px;
+  font-family: var(--plex);
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.teams-titlebar-left { display: flex; align-items: center; gap: 8px; }
+.teams-titlebar-icon {
+  width: 16px; height: 16px;
+  background: #fff;
+  color: #5b5fc7;
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 9px;
+}
+
+.teams-channel-bar {
+  background: #f5f5f7;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 8px 14px;
+  font-family: var(--plex);
+  font-size: 11px;
+  color: #4b5563;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.teams-channel-name { font-weight: 600; color: #1f2937; }
+.teams-channel-name::before { content: '#  '; color: #6b7280; }
+
+.teams-unread-badge {
+  background: #c4314b;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-family: var(--mono);
+  font-weight: 600;
+}
+
+.teams-messages {
+  flex: 1;
+  overflow: hidden;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.teams-msg {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-family: var(--plex);
+  font-size: 11px;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.teams-msg-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 600;
+  font-size: 10px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.teams-msg-avatar.a { background: #d83b01; }
+.teams-msg-avatar.b { background: #038387; }
+.teams-msg-avatar.c { background: #8764b8; }
+.teams-msg-avatar.d { background: #c19c00; }
+.teams-msg-avatar.e { background: #498205; }
+
+.teams-msg-body {
+  flex: 1;
+  background: #f3f2f1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border-top-left-radius: 0;
+}
+
+.teams-msg-name { font-weight: 600; font-size: 10px; color: #1f2937; margin-bottom: 2px; }
+.teams-msg-name .time { font-weight: 400; color: #9ca3af; margin-left: 6px; font-size: 9px; }
+.teams-msg-text { color: #4b5563; line-height: 1.5; }
+
+.scene-3.active .teams-msg {
+  animation: msgFlow 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.scene-3.active .teams-msg:nth-child(1) { animation-delay: 0.4s; }
+.scene-3.active .teams-msg:nth-child(2) { animation-delay: 0.9s; }
+.scene-3.active .teams-msg:nth-child(3) { animation-delay: 1.4s; }
+.scene-3.active .teams-msg:nth-child(4) { animation-delay: 1.9s; }
+.scene-3.active .teams-msg:nth-child(5) { animation-delay: 2.4s; }
+.scene-3.active .teams-msg:nth-child(6) { animation-delay: 2.9s; }
+.scene-3.active .teams-msg:nth-child(7) { animation-delay: 3.4s; }
+
+@keyframes msgFlow {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== SCENE 4: CLOCK ========== */
+.scene-4 { background: var(--bg-section); }
+
+.clock-stage {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 24px;
+}
+
+.clock-face {
+  width: 160px; height: 160px;
+  border: 3px solid var(--line);
+  border-radius: 50%;
+  position: relative;
+  background: var(--bg-card);
+}
+
+.clock-mark {
+  position: absolute;
+  top: 8px; left: 50%;
+  width: 2px; height: 8px;
+  background: var(--text-tertiary);
+  transform-origin: 50% 72px;
+}
+.clock-mark.m-3 { transform: translateX(-50%) rotate(90deg); background: var(--accent); }
+.clock-mark.m-6 { transform: translateX(-50%) rotate(180deg); background: var(--accent); }
+.clock-mark.m-9 { transform: translateX(-50%) rotate(270deg); background: var(--accent); }
+.clock-mark.m-12 { transform: translateX(-50%) rotate(0deg); background: var(--accent); }
+
+.clock-hand {
+  position: absolute;
+  top: 50%; left: 50%;
+  background: var(--accent);
+  transform-origin: 50% 100%;
+  border-radius: 2px;
+}
+
+.clock-hand.hour {
+  width: 4px; height: 42px;
+  margin-left: -2px;
+  margin-top: -42px;
+  background: var(--text-primary);
+}
+
+.clock-hand.minute {
+  width: 2px; height: 56px;
+  margin-left: -1px;
+  margin-top: -56px;
+  background: var(--accent);
+}
+
+.clock-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 12px; height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.clock-time-display {
+  font-family: var(--mono);
+  font-size: 22px;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.clock-message {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.auto-run-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.auto-run-tag::before {
+  content: '';
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+.scene-4.active .clock-hand.hour { animation: hourSweep 1.6s 0.2s ease-in-out forwards; }
+.scene-4.active .clock-hand.minute { animation: minuteSweep 1.6s 0.2s ease-in-out forwards; }
+.scene-4.active .clock-time-display { animation: timeChange 1.6s 0.2s ease-out forwards; }
+
+@keyframes hourSweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(255deg); }
+}
+
+@keyframes minuteSweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(2880deg); }
+}
+
+@keyframes timeChange {
+  0% { content: '08:25'; }
+  100% { content: '17:00'; }
+}
+
+/* ========== SCENE 5: TRIGGER ========== */
+.scene-5 { background: var(--bg-section); }
+
+.trigger-stage {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 28px;
+}
+
+.trigger-pipeline {
+  width: 320px; height: 80px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.pipe-source, .pipe-target {
+  width: 50px; height: 50px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 18px;
+  color: var(--accent);
+  border-radius: 4px;
+}
+
+.pipe-target {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.pipe-flow {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(to right, var(--accent), transparent);
+  margin: 0 12px;
+  position: relative;
+}
+
+.pipe-particle {
+  position: absolute;
+  top: 50%;
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+}
+
+.scene-5.active .pipe-particle { animation: particleFlow 1.4s linear infinite; }
+.scene-5.active .pipe-particle:nth-child(2) { animation-delay: 0.3s; }
+.scene-5.active .pipe-particle:nth-child(3) { animation-delay: 0.6s; }
+.scene-5.active .pipe-particle:nth-child(4) { animation-delay: 0.9s; }
+
+@keyframes particleFlow {
+  0% { left: 0; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+.trigger-label {
+  font-family: var(--serif);
+  font-size: 18px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.trigger-label .accent { color: var(--accent); }
+
+/* ========== SCENE 6-9: AI AGENTS ========== */
+.scene-agent { background: var(--bg-section); }
+
+.agent-stage {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 28px;
+  width: 100%;
+}
+
+.agent-header {
+  text-align: center;
+}
+
+.agent-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.agent-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--text-primary);
+}
+
+.agent-flow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.agent-input, .agent-output {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.doc-card {
+  width: 64px; height: 80px;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-tertiary);
+  transition: all 0.4s ease;
+}
+
+.doc-card.glow {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(212, 164, 88, 0.3);
+}
+
+.doc-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 12px; height: 12px;
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.doc-card .doc-label {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px;
+  letter-spacing: 0.12em;
+}
+
+.agent-arrow {
+  font-size: 24px;
+  color: var(--accent);
+  font-family: var(--plex);
+}
+
+.agent-processor {
+  padding: 12px 20px;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  color: var(--accent);
+  text-transform: uppercase;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.agent-processor::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(to right, transparent, rgba(212, 164, 88, 0.4), transparent);
+}
+
+.scene-agent.active .agent-processor::after {
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.scene-agent.active .doc-card.output {
+  animation: docPopIn 0.6s cubic-bezier(0.2, 1.5, 0.5, 1) forwards;
+}
+
+.scene-agent.active .doc-card.output:nth-child(1) { animation-delay: 0.4s; }
+.scene-agent.active .doc-card.output:nth-child(2) { animation-delay: 0.55s; }
+.scene-agent.active .doc-card.output:nth-child(3) { animation-delay: 0.7s; }
+.scene-agent.active .doc-card.output:nth-child(4) { animation-delay: 0.85s; }
+.scene-agent.active .doc-card.output:nth-child(5) { animation-delay: 1.0s; }
+
+.doc-card.output { opacity: 0; transform: scale(0.6); }
+
+@keyframes docPopIn {
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.summary-3lines {
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  padding: 18px 24px;
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.85;
+  max-width: 360px;
+  position: relative;
+}
+
+.summary-3lines::before {
+  content: '';
+  position: absolute;
+  top: 18px; left: 0;
+  width: 3px;
+  height: calc(100% - 36px);
+  background: var(--accent);
+}
+
+.summary-3lines .num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  margin-right: 10px;
+  letter-spacing: 0.1em;
+}
+
+.ball-table-mini {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 12px 16px;
+  font-family: var(--plex);
+  font-size: 10px;
+  border-radius: 4px;
+  min-width: 280px;
+}
+
+.ball-table-mini .ball-row-mini {
+  display: grid;
+  grid-template-columns: 1fr 70px 60px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: center;
+  gap: 8px;
+}
+.ball-table-mini .ball-row-mini:last-child { border-bottom: none; }
+.ball-table-mini .holder { color: var(--accent); font-weight: 500; }
+.ball-table-mini .subj { color: var(--text-secondary); font-size: 9px; }
+.ball-table-mini .stat { font-size: 8px; padding: 1px 6px; border: 1px solid; text-align: center; letter-spacing: 0.06em; }
+.ball-table-mini .stat.pending { color: var(--status-pending); border-color: var(--status-pending); }
+.ball-table-mini .stat.overdue { color: var(--status-overdue); border-color: var(--status-overdue); }
+.ball-table-mini .stat.done { color: var(--status-done); border-color: var(--status-done); }
+
+/* ========== SCENE 10: 4 OUTPUTS ========== */
+.scene-10 { background: var(--bg-section); }
+
+.outputs-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  width: 100%;
+  max-width: 760px;
+}
+
+.output-card {
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  padding: 18px 14px;
+  text-align: center;
+  border-radius: 4px;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.scene-10.active .output-card:nth-child(1) { animation: cardSlide 0.5s 0.2s both; }
+.scene-10.active .output-card:nth-child(2) { animation: cardSlide 0.5s 0.4s both; }
+.scene-10.active .output-card:nth-child(3) { animation: cardSlide 0.5s 0.6s both; }
+.scene-10.active .output-card:nth-child(4) { animation: cardSlide 0.5s 0.8s both; }
+
+@keyframes cardSlide {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.output-card .icon {
+  font-family: var(--serif);
+  font-size: 28px;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.output-card .name {
+  font-family: var(--plex);
+  font-size: 11px;
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.output-card .desc {
+  font-family: var(--plex);
+  font-size: 9px;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+}
+
+.scene-10 .outputs-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  margin-bottom: 28px;
+  color: var(--text-primary);
+}
+
+/* ========== SCENE 11: BEFORE / AFTER ========== */
+.scene-11 {
+  background:
+    radial-gradient(ellipse at 25% 50%, rgba(181, 101, 96, 0.1), transparent 50%),
+    radial-gradient(ellipse at 75% 50%, rgba(90, 138, 107, 0.12), transparent 50%);
+}
+
+.beforeafter-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  width: 100%;
+  max-width: 840px;
+}
+
+.ba-side {
+  flex: 1;
+  text-align: center;
+  padding: 24px 18px;
+  border: 1px solid var(--line);
+  background: var(--bg-card);
+  border-radius: 4px;
+  opacity: 0;
+}
+
+.ba-side .ba-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.ba-side.before .ba-label { color: var(--status-overdue); }
+.ba-side.after .ba-label { color: var(--status-done); }
+
+.ba-side .ba-num {
+  font-family: var(--serif);
+  font-size: 64px;
+  font-weight: 500;
+  line-height: 1;
+  margin-bottom: 8px;
+  letter-spacing: -0.03em;
+}
+
+.ba-side.before .ba-num { color: var(--status-overdue); }
+.ba-side.after .ba-num { color: var(--status-done); }
+
+.ba-side .ba-unit {
+  font-family: var(--plex);
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+
+.ba-side .ba-desc {
+  font-family: var(--plex);
+  font-size: 11px;
+  color: var(--text-tertiary);
+  line-height: 1.7;
+}
+
+.ba-arrow {
+  font-family: var(--serif);
+  font-size: 36px;
+  color: var(--accent);
+  text-align: center;
+  opacity: 0;
+}
+
+.ba-arrow .multiplier {
+  display: block;
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--accent);
+  margin-top: 8px;
+  letter-spacing: 0.12em;
+}
+
+.scene-11.active .ba-side.before { animation: fadeInLeft 0.6s 0.3s both; }
+.scene-11.active .ba-arrow { animation: arrowReveal 0.6s 0.8s both; }
+.scene-11.active .ba-side.after { animation: fadeInRight 0.6s 1.3s both; }
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes arrowReveal {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ========== SCENE 12: BENEFITS ========== */
+.scene-12 {
+  background: 
+    radial-gradient(ellipse at 50% 30%, rgba(212, 164, 88, 0.08), transparent 60%);
+}
+
+.benefits-stage {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 28px;
+  width: 100%;
+}
+
+.benefits-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.benefits-title .accent { color: var(--accent); font-style: italic; }
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  width: 100%;
+  max-width: 720px;
+}
+
+.benefit-card {
+  border-left: 3px solid var(--accent);
+  background: var(--bg-card);
+  padding: 20px 22px;
+  opacity: 0;
+}
+
+.scene-12.active .benefit-card:nth-child(1) { animation: benefitIn 0.5s 0.4s both; }
+.scene-12.active .benefit-card:nth-child(2) { animation: benefitIn 0.5s 0.7s both; }
+.scene-12.active .benefit-card:nth-child(3) { animation: benefitIn 0.5s 1.0s both; }
+
+@keyframes benefitIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.benefit-card .ben-num {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  letter-spacing: 0.18em;
+  margin-bottom: 8px;
+}
+
+.benefit-card .ben-title {
+  font-family: var(--serif);
+  font-size: 16px;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.benefit-card .ben-desc {
+  font-family: var(--plex);
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+/* ========== SCENE 13: ENDING ========== */
+.scene-13 {
+  background: var(--bg-deep);
+}
+
+.ending-stage {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 18px;
+  text-align: center;
+}
+
+.ending-brand {
+  font-family: var(--serif);
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.ending-tagline {
+  font-family: var(--plex);
+  font-size: 13px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.06em;
+  font-style: italic;
+}
+
+.ending-cta {
+  margin-top: 12px;
+  padding: 12px 28px;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 2px;
+}
+
+.ending-cta:hover {
+  background: var(--accent);
+  color: var(--bg-deep);
+}
+
+.scene-13.active .ending-brand { animation: endingFade 0.6s 0.2s both; }
+.scene-13.active .ending-tagline { animation: endingFade 0.6s 0.5s both; }
+.scene-13.active .ending-cta { animation: endingFade 0.6s 0.8s both; }
+
+@keyframes endingFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== TIMELINE ========== */
+.timeline-track {
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 100%;
+  height: 14px;
+  background: rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.timeline-track::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--line-soft);
+}
+
+.timeline-bar {
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--accent);
+  pointer-events: none;
+}
+
+.timeline-handle {
+  position: absolute;
+  bottom: 0;
+  width: 12px;
+  height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  transform: translate(-50%, 50%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  box-shadow: 0 0 0 3px rgba(212, 164, 88, 0.2);
+}
+
+.timeline-track:hover .timeline-handle { opacity: 1; }
+
+.scene-progress {
+  position: absolute;
+  bottom: 22px; right: 16px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--text-tertiary);
+  z-index: 15;
+  pointer-events: none;
+}
+
+/* ========== DEMO CONTROLS (below the demo container) ========== */
+.demo-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-btn {
+  padding: 10px 22px;
+  background: transparent;
+  border: 1px solid var(--accent-line);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 2px;
+}
+
+.demo-btn:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.demo-btn.primary {
+  border-color: var(--accent);
+}
+
+.demo-hint {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* ========== EXPLANATION SECTION (below demo) ========== */
+.explanation-section {
+  padding: 72px 32px 48px;
+  border-top: 1px solid var(--line-soft);
+  background: var(--bg-section);
+}
+
+.explanation-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.explanation-block h3 {
+  font-family: var(--serif);
+  font-size: 18px;
+  margin-bottom: 14px;
+  color: var(--text-primary);
+}
+
+.explanation-block h3::before {
+  content: '◆';
+  color: var(--accent);
+  margin-right: 10px;
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+.explanation-block p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.85;
+}
+
+.explanation-block ul {
+  list-style: none;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.95;
+}
+
+.explanation-block ul li {
+  padding-left: 18px;
+  position: relative;
+}
+
+.explanation-block ul li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+
+/* ========== FOOTER ========== */
+footer.page-footer {
+  padding: 48px 32px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-deep);
+  text-align: center;
+}
+
+.footer-brand-large {
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.footer-tagline-en {
+  font-family: var(--plex);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+  margin-bottom: 18px;
+}
+
+.footer-contact-line {
+  font-family: var(--plex);
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+
+.footer-contact-line a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent-line);
+}
+.footer-contact-line a:hover { border-bottom-color: var(--accent); }
+
+.footer-disclaimer-line {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line-soft);
+  font-family: var(--plex);
+  font-size: 10px;
+  color: var(--text-tertiary);
+  line-height: 1.7;
+  max-width: 760px;
+  margin-left: auto; margin-right: auto;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .page-title { font-size: 26px; }
+  .page-subtitle { font-size: 13px; }
+  .demo-container { aspect-ratio: 4 / 5; }
+  .scene { padding: 16px; }
+  .scene-0 .title-mega { font-size: 22px; }
+  .org-row { flex-direction: column; gap: 12px; }
+  .org-box { min-width: 160px; padding: 10px 16px; font-size: 11px; }
+  .agent-flow { flex-direction: column; gap: 16px; }
+  .outputs-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .output-card { padding: 14px 10px; }
+  .output-card .icon { font-size: 22px; }
+  .output-card .name { font-size: 10px; }
+  .output-card .desc { font-size: 8px; }
+  .beforeafter-stage { flex-direction: column; gap: 14px; }
+  .ba-side .ba-num { font-size: 44px; }
+  .ba-arrow { transform: rotate(90deg); }
+  .benefits-grid { grid-template-columns: 1fr; gap: 10px; }
+  .benefit-card { padding: 14px 16px; }
+  .explanation-grid { grid-template-columns: 1fr; gap: 28px; }
+  .explanation-section { padding: 48px 24px 36px; }
+  .clock-face { width: 110px; height: 110px; }
+  .clock-hand.hour { height: 30px; margin-top: -30px; }
+  .clock-hand.minute { height: 40px; margin-top: -40px; }
+  .outlook-mail { grid-template-columns: 12px 80px 1fr 50px; gap: 6px; padding: 6px 8px; font-size: 10px; }
+  .teams-msg { font-size: 10px; }
+  .summary-3lines { font-size: 11px; padding: 12px 16px; }
+  .ball-table-mini { font-size: 9px; min-width: 220px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== PAGE HEADER ===== -->
+<header class="page-header">
+  <div class="page-eyebrow">Demo · Email Thread Management</div>
+  <h1 class="page-title">
+    マネージャーの<span class="accent">時間を取り戻す</span>AI
+  </h1>
+  <p class="page-subtitle">
+    メール・Teams 確認の30分を3分に。<br>
+    情報が最も集まる中間管理職のために、AIが代わりに読み、整理し、要約します。
+  </p>
+</header>
+
+<!-- ===== DEMO CONTAINER ===== -->
+<section class="demo-section">
+  <div class="demo-container" id="demoContainer">
+
+    <!-- SCENE 0: TITLE -->
+    <div class="scene scene-0" data-scene="0">
+      <div class="scene-label">Demo</div>
+      <div class="title-mega">
+        マネージャーの<br>
+        <span class="accent">時間を取り戻す</span> AI
+      </div>
+      <div class="subtitle">メール・Teams 確認の 30分を 3分に</div>
+    </div>
+
+    <!-- SCENE 1: WHY 課長 -->
+    <div class="scene scene-1" data-scene="1">
+      <div class="scene-label">Why 中間管理職?</div>
+      <div class="org-chart">
+        <div class="scene-1-title">情報が最も集中するのは <span class="accent">中間管理職</span></div>
+        <div class="org-row">
+          <div class="org-box role-1 role-name">部長</div>
+        </div>
+        <div class="org-row" style="position: relative;">
+          <div class="org-box role-2 role-name highlight">課長(中間管理職)</div>
+          <div class="email-flow info-arrow-1" style="left: 8%; top: 10%;">✉</div>
+          <div class="email-flow info-arrow-2" style="left: 8%; top: 50%;">💬</div>
+          <div class="email-flow info-arrow-3" style="left: 8%; top: 80%;">✉</div>
+        </div>
+        <div class="org-row">
+          <div class="org-box role-3 role-name">一般職 A</div>
+          <div class="org-box role-3 role-name">一般職 B</div>
+          <div class="org-box role-3 role-name">一般職 C</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 2: OUTLOOK -->
+    <div class="scene scene-2" data-scene="2">
+      <div class="outlook-window">
+        <div class="outlook-titlebar">
+          <div class="outlook-titlebar-left">
+            <div class="outlook-titlebar-icon">O</div>
+            <span>受信トレイ — 課長</span>
+          </div>
+          <div class="outlook-counter">未読: <span class="outlook-counter-num">+18</span></div>
+        </div>
+        <div class="outlook-toolbar">📥 受信トレイ &nbsp; · &nbsp; 自動振り分け中</div>
+        <div class="outlook-list">
+          <div class="outlook-mail unread">
+            <div class="imp">!</div>
+            <div class="from">メンバーA</div>
+            <div class="subject">Re: 顧客X 仕様変更の件</div>
+            <div class="time">17:42</div>
+          </div>
+          <div class="outlook-mail unread">
+            <div class="imp"></div>
+            <div class="from">メンバーB</div>
+            <div class="subject">顧客Y サンプル評価結果ご報告</div>
+            <div class="time">17:38</div>
+          </div>
+          <div class="outlook-mail unread">
+            <div class="imp">!</div>
+            <div class="from">顧客Z (CC: 課長)</div>
+            <div class="subject">設計レビューのスケジュール調整</div>
+            <div class="time">17:31</div>
+          </div>
+          <div class="outlook-mail unread">
+            <div class="imp"></div>
+            <div class="from">メンバーC</div>
+            <div class="subject">月次生産計画 ご確認お願いします</div>
+            <div class="time">17:24</div>
+          </div>
+          <div class="outlook-mail unread">
+            <div class="imp"></div>
+            <div class="from">メンバーD</div>
+            <div class="subject">Re: 顧客X 見積もり最終確認</div>
+            <div class="time">17:18</div>
+          </div>
+          <div class="outlook-mail unread">
+            <div class="imp">!</div>
+            <div class="from">部長 (CC: 課長)</div>
+            <div class="subject">月次レビュー資料 期限再確認</div>
+            <div class="time">17:09</div>
+          </div>
+          <div class="outlook-mail">
+            <div class="imp"></div>
+            <div class="from">メンバーE</div>
+            <div class="subject">図面修正版 送付完了</div>
+            <div class="time">16:55</div>
+          </div>
+          <div class="outlook-mail">
+            <div class="imp"></div>
+            <div class="from">メンバーA</div>
+            <div class="subject">Re: 量産立ち上げ進捗確認</div>
+            <div class="time">16:42</div>
+          </div>
+          <div class="outlook-mail">
+            <div class="imp"></div>
+            <div class="from">顧客X (CC: 課長)</div>
+            <div class="subject">次回ミーティング議題確認</div>
+            <div class="time">16:30</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: TEAMS -->
+    <div class="scene scene-3" data-scene="3">
+      <div class="teams-window">
+        <div class="teams-titlebar">
+          <div class="teams-titlebar-left">
+            <div class="teams-titlebar-icon">T</div>
+            <span>Microsoft Teams — 営業課チャット</span>
+          </div>
+          <div class="outlook-counter">未読: <span class="outlook-counter-num">+47</span></div>
+        </div>
+        <div class="teams-channel-bar">
+          <div class="teams-channel-name">営業課 一般</div>
+          <div class="teams-unread-badge">47</div>
+        </div>
+        <div class="teams-messages">
+          <div class="teams-msg">
+            <div class="teams-msg-avatar a">A</div>
+            <div class="teams-msg-body">
+              <div class="teams-msg-name">メンバーA <span class="time">17:35</span></div>
+              <div class="teams-msg-text">顧客X さんから仕様変更の打診来ました。明日中に方向性出したいです、課長相談OKですか?</div>
+            </div>
+          </div>
+          <div class="teams-msg">
+            <div class="teams-msg-avatar b">B</div>
+            <div class="teams-msg-body">
+              <div class="teams-msg-name">メンバーB <span class="time">17:32</span></div>
+              <div class="teams-msg-text">サンプル評価のフェーズ完了しました。レポート上げます</div>
+            </div>
+          </div>
+          <div class="teams-msg">
+            <div class="teams-msg-avatar c">C</div>
+            <div class="teams-msg-body">
+              <div class="teams-msg-name">メンバーC <span class="time">17:28</span></div>
+              <div class="teams-msg-text">月次生産計画、数値確認しました。来週月曜までに反映入れます</div>
+            </div>
+          </div>
+          <div class="teams-msg">
+            <div class="teams-msg-avatar d">D</div>
+            <div class="teams-msg-body">
+              <div class="teams-msg-name">メンバーD <span class="time">17:21</span></div>
+              <div class="teams-msg-text">顧客X 見積もり、上司確認待ちです。明日朝には先方送付できそう</div>
+            </div>
+          </div>
+          <div class="teams-msg">
+            <div class="teams-msg-avatar a">A</div>
+            <div class="teams-msg-body">
+              <div class="teams-msg-name">メンバーA <span class="time">17:14</span></div>
+              <div class="teams-msg-text">@課長 量産立ち上げの件、ヘルプ必要です。電話できますか?</div>
+            </div>
+          </div>
+          <div class="teams-msg">
+            <div class="teams-msg-avatar e">E</div>
+            <div class="teams-msg-body">
+              <div class="teams-msg-name">メンバーE <span class="time">17:02</span></div>
+              <div class="teams-msg-text">図面修正版、SharePoint 上げました。レビューお願いします</div>
+            </div>
+          </div>
+          <div class="teams-msg">
+            <div class="teams-msg-avatar b">B</div>
+            <div class="teams-msg-body">
+              <div class="teams-msg-name">メンバーB <span class="time">16:47</span></div>
+              <div class="teams-msg-text">顧客Y との対面 next week、議題候補3件あげました。優先度ご相談</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 4: CLOCK -->
+    <div class="scene scene-4" data-scene="4">
+      <div class="scene-label">Time progresses</div>
+      <div class="clock-stage">
+        <div class="clock-face">
+          <div class="clock-mark m-12"></div>
+          <div class="clock-mark m-3"></div>
+          <div class="clock-mark m-6"></div>
+          <div class="clock-mark m-9"></div>
+          <div class="clock-hand hour"></div>
+          <div class="clock-hand minute"></div>
+          <div class="clock-center"></div>
+        </div>
+        <div class="clock-time-display" id="clockTime">17:00</div>
+        <div class="clock-message">毎日 朝 08:25 と 夕 17:00、自動で動き出します</div>
+        <div class="auto-run-tag">Auto Run · Active</div>
+      </div>
+    </div>
+
+    <!-- SCENE 5: TRIGGER -->
+    <div class="scene scene-5" data-scene="5">
+      <div class="scene-label">Auto Run Triggered · 17:00</div>
+      <div class="trigger-stage">
+        <div class="trigger-pipeline">
+          <div class="pipe-source">📥</div>
+          <div class="pipe-flow">
+            <div class="pipe-particle"></div>
+            <div class="pipe-particle"></div>
+            <div class="pipe-particle"></div>
+            <div class="pipe-particle"></div>
+          </div>
+          <div class="pipe-target">⚙</div>
+        </div>
+        <div class="trigger-label">
+          メール18件 + チャット47件を <span class="accent">AI が読み込み開始</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 6: AI Agent 1 - 個人週報 -->
+    <div class="scene scene-agent scene-6" data-scene="6">
+      <div class="scene-label">AI Agent 1 / 4</div>
+      <div class="agent-stage">
+        <div class="agent-header">
+          <div class="agent-num">AGENT 01</div>
+          <div class="agent-title">個人週報を生成</div>
+        </div>
+        <div class="agent-flow">
+          <div class="agent-input">
+            <div class="doc-card glow"><span class="doc-label">RAW</span></div>
+          </div>
+          <div class="agent-arrow">→</div>
+          <div class="agent-processor">AI Processing</div>
+          <div class="agent-arrow">→</div>
+          <div class="agent-output">
+            <div class="doc-card output"><span class="doc-label">A</span></div>
+            <div class="doc-card output"><span class="doc-label">B</span></div>
+            <div class="doc-card output"><span class="doc-label">C</span></div>
+            <div class="doc-card output"><span class="doc-label">D</span></div>
+            <div class="doc-card output"><span class="doc-label">E</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 7: AI Agent 2 - チーム週報 -->
+    <div class="scene scene-agent scene-7" data-scene="7">
+      <div class="scene-label">AI Agent 2 / 4</div>
+      <div class="agent-stage">
+        <div class="agent-header">
+          <div class="agent-num">AGENT 02</div>
+          <div class="agent-title">チーム週報に統合</div>
+        </div>
+        <div class="agent-flow">
+          <div class="agent-input">
+            <div class="doc-card"><span class="doc-label">A</span></div>
+            <div class="doc-card"><span class="doc-label">B</span></div>
+            <div class="doc-card"><span class="doc-label">C</span></div>
+            <div class="doc-card"><span class="doc-label">D</span></div>
+            <div class="doc-card"><span class="doc-label">E</span></div>
+          </div>
+          <div class="agent-arrow">→</div>
+          <div class="agent-processor">Aggregate</div>
+          <div class="agent-arrow">→</div>
+          <div class="agent-output">
+            <div class="doc-card output glow" style="width: 84px; height: 100px;">
+              <span class="doc-label">TEAM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 8: AI Agent 3 - 部長サマリー -->
+    <div class="scene scene-agent scene-8" data-scene="8">
+      <div class="scene-label">AI Agent 3 / 4</div>
+      <div class="agent-stage">
+        <div class="agent-header">
+          <div class="agent-num">AGENT 03</div>
+          <div class="agent-title">部長向け 3 行サマリー</div>
+        </div>
+        <div class="agent-flow">
+          <div class="agent-input">
+            <div class="doc-card" style="width: 84px; height: 100px;"><span class="doc-label">TEAM</span></div>
+          </div>
+          <div class="agent-arrow">→</div>
+          <div class="agent-processor">Compress</div>
+          <div class="agent-arrow">→</div>
+          <div class="agent-output">
+            <div class="summary-3lines">
+              <div><span class="num">01</span>顧客X 仕様変更要請、技術部署と要協議</div>
+              <div><span class="num">02</span>期限超過 1件、今週前半に挽回計画</div>
+              <div><span class="num">03</span>来週 月次レビュー資料は予定通り</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 9: AI Agent 4 - ボール俯瞰 -->
+    <div class="scene scene-agent scene-9" data-scene="9">
+      <div class="scene-label">AI Agent 4 / 4</div>
+      <div class="agent-stage">
+        <div class="agent-header">
+          <div class="agent-num">AGENT 04</div>
+          <div class="agent-title">誰が次に動くべきか — 一覧表</div>
+        </div>
+        <div class="agent-flow">
+          <div class="agent-input">
+            <div class="doc-card glow"><span class="doc-label">ALL</span></div>
+          </div>
+          <div class="agent-arrow">→</div>
+          <div class="agent-processor">Map Tasks</div>
+          <div class="agent-arrow">→</div>
+          <div class="agent-output">
+            <div class="ball-table-mini">
+              <div class="ball-row-mini">
+                <span class="holder">メンバーA</span>
+                <span class="subj">顧客X 仕様</span>
+                <span class="stat pending">PEND</span>
+              </div>
+              <div class="ball-row-mini">
+                <span class="holder">メンバーB</span>
+                <span class="subj">顧客Y 評価</span>
+                <span class="stat overdue">OVER</span>
+              </div>
+              <div class="ball-row-mini">
+                <span class="holder">課長(自分)</span>
+                <span class="subj">設計レビュー</span>
+                <span class="stat pending">PEND</span>
+              </div>
+              <div class="ball-row-mini">
+                <span class="holder">メンバーE</span>
+                <span class="subj">図面修正</span>
+                <span class="stat done">DONE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 10: 4 OUTPUTS -->
+    <div class="scene scene-10" data-scene="10">
+      <div class="scene-label">Final Output · 4 Reports</div>
+      <div class="agent-stage">
+        <div class="outputs-title">毎日 17:00、4 つの出力が手元に届く</div>
+        <div class="outputs-grid">
+          <div class="output-card">
+            <div class="icon">①</div>
+            <div class="name">個人週報</div>
+            <div class="desc">メンバー別 5 件</div>
+          </div>
+          <div class="output-card">
+            <div class="icon">②</div>
+            <div class="name">チーム週報</div>
+            <div class="desc">課単位の俯瞰</div>
+          </div>
+          <div class="output-card">
+            <div class="icon">③</div>
+            <div class="name">部長サマリー</div>
+            <div class="desc">3 行に圧縮</div>
+          </div>
+          <div class="output-card">
+            <div class="icon">④</div>
+            <div class="name">ボール俯瞰</div>
+            <div class="desc">表 + Excel + PNG</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 11: BEFORE / AFTER -->
+    <div class="scene scene-11" data-scene="11">
+      <div class="scene-label">Before / After</div>
+      <div class="beforeafter-stage">
+        <div class="ba-side before">
+          <div class="ba-label">Before</div>
+          <div class="ba-num">30</div>
+          <div class="ba-unit">分 / 日</div>
+          <div class="ba-desc">メールと Teams を1件ずつ読み<br>頭の中で繋げて把握する時間</div>
+        </div>
+        <div class="ba-arrow">
+          →
+          <span class="multiplier">× 1/10</span>
+        </div>
+        <div class="ba-side after">
+          <div class="ba-label">After</div>
+          <div class="ba-num">3</div>
+          <div class="ba-unit">分 / 日</div>
+          <div class="ba-desc">AI が整理した 4 つの<br>レポートを読むだけ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 12: BENEFITS -->
+    <div class="scene scene-12" data-scene="12">
+      <div class="scene-label">What you gain</div>
+      <div class="benefits-stage">
+        <div class="benefits-title">毎日浮く <span class="accent">27 分</span> の使い道</div>
+        <div class="benefits-grid">
+          <div class="benefit-card">
+            <div class="ben-num">01</div>
+            <div class="ben-title">本来の判断業務</div>
+            <div class="ben-desc">情報を追う時間を減らし<br>判断と意思決定に集中する</div>
+          </div>
+          <div class="benefit-card">
+            <div class="ben-num">02</div>
+            <div class="ben-title">副業の時間</div>
+            <div class="ben-desc">本業を効率化し<br>副業活動の余白を生む</div>
+          </div>
+          <div class="benefit-card">
+            <div class="ben-num">03</div>
+            <div class="ben-title">家族の時間</div>
+            <div class="ben-desc">残業を切り上げ<br>大切な人と過ごす夜に</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 13: ENDING -->
+    <div class="scene scene-13" data-scene="13">
+      <div class="ending-stage">
+        <div class="ending-brand">WEST FUSION AI</div>
+        <div class="ending-tagline">AI workflow tools, built from the field.</div>
+        <button class="ending-cta" id="replayBtn">もう一度見る</button>
+      </div>
+    </div>
+
+    <!-- TIMELINE BAR (clickable to seek) -->
+    <div class="timeline-track" id="timelineTrack" title="クリックでシーン移動">
+      <div class="timeline-bar" id="timelineBar"></div>
+      <div class="timeline-handle" id="timelineHandle"></div>
+    </div>
+    <div class="scene-progress" id="sceneProgress">00 / 13</div>
+
+  </div>
+
+  <!-- DEMO CONTROLS -->
+  <div class="demo-controls">
+    <button class="demo-btn primary" id="restartBtn">⟲ 最初から</button>
+    <button class="demo-btn" id="playPauseBtn">⏸ 一時停止</button>
+  </div>
+  <div class="demo-hint">タイムバーをクリックすると好きなシーンに移動できます</div>
+</section>
+
+<!-- ===== EXPLANATION SECTION ===== -->
+<section class="explanation-section">
+  <div class="explanation-grid">
+    <div class="explanation-block">
+      <h3>なぜ中間管理職に最適か</h3>
+      <p>
+        メールも Teams のグループチャットも、現場の業務情報が最も集中する点は <strong>中間管理職</strong> です。
+        一般職では届かない部署横断の話、部長まで上がらない細かな進捗、双方向のやり取り — それら全部が CC やグループチャットを通じて課長レベルに集約します。
+        だからこそ、AI で整理する効果が最も大きくなります。
+      </p>
+    </div>
+    <div class="explanation-block">
+      <h3>Time saved · 何が浮くか</h3>
+      <ul>
+        <li>メールを 1 通ずつ開いて読む時間</li>
+        <li>誰が何を言っていたか頭で繋げる時間</li>
+        <li>「あれどうなったかな」と思い出して探す時間</li>
+        <li>部下に進捗確認のメッセージを送る時間</li>
+        <li>部長に何を報告するか考える時間</li>
+      </ul>
+    </div>
+    <div class="explanation-block">
+      <h3>動作環境(運用ベース)</h3>
+      <ul>
+        <li>Outlook (COM / pywin32) — メール取得</li>
+        <li>Microsoft Teams + Power Automate — チャット取得</li>
+        <li>Python — データ整形・AI 連携</li>
+        <li>SharePoint / OneDrive — 出力配信</li>
+        <li>Task Scheduler — 朝 08:25・夕 17:00 自動実行</li>
+        <li>会社 PC のクローズ環境で完結 — 社外データ流出なし</li>
+      </ul>
+    </div>
+    <div class="explanation-block">
+      <h3>自動化の前提条件 — 完全自動か、半自動か</h3>
+      <p>
+        本デモでお見せした <strong>「AI が読み込んでレポートを生成するまで完全自動」</strong> の挙動は、社内 AI(Claude API・Azure OpenAI など)が業務 PC からプログラム呼び出しできる環境が前提です。
+      </p>
+      <p style="margin-top: 12px;">
+        この前提がない環境(API 未契約、社内 AI が Web インターフェース限定など)では、<strong>AI に渡す部分のみ手動</strong>になります。
+        ただし、メール・Teams の収集、メンバー別の振り分け、データ整形、出力ファイル化、配信までの工程は引き続き自動化できるため、<strong>1日のメール確認時間を 30分 → 5〜10分</strong>に圧縮することは十分可能です。
+      </p>
+      <p style="margin-top: 12px; color: var(--text-tertiary); font-size: 12px;">
+        ※ 案件の初回ヒアリング時、社内 AI 環境を確認した上で「完全自動」「半自動」のどちらの構成にするかご提案します。
+      </p>
+    </div>
+    <div class="explanation-block">
+      <h3>ユースケース</h3>
+      <ul>
+        <li>製造業の課長(現場で運用中)</li>
+        <li>営業・技術部署のチームリーダー</li>
+        <li>プロジェクトマネージャー</li>
+        <li>SME 経営者の業務効率化</li>
+        <li>副業・兼業時間を確保したい中間管理職</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="page-footer">
+  <div class="footer-brand-large">WEST FUSION AI</div>
+  <div class="footer-tagline-en">AI workflow tools, built from the field.</div>
+  <div class="footer-contact-line">
+    Created by West Fusion AI<br>
+    Contact: <a href="mailto:west.fusion.ai@gmail.com">west.fusion.ai@gmail.com</a>
+  </div>
+  <div class="footer-disclaimer-line">
+    ※ 本ページは、現在本番運用中の Email Thread Management システムのアニメーション・デモです。<br>
+    画面に表示されているメンバー名・顧客名・メール件名・数値はすべて機密配慮のため架空のサンプルデータです。
+  </div>
+</footer>
+
+<script>
+(function() {
+  const TIMELINE = [
+    { id: 0, start: 0,    duration: 3000,  label: 'Title' },
+    { id: 1, start: 3000, duration: 5000,  label: 'Why 中間管理職' },
+    { id: 2, start: 8000, duration: 5000,  label: 'Outlook' },
+    { id: 3, start: 13000, duration: 5000, label: 'Teams' },
+    { id: 4, start: 18000, duration: 2500, label: 'Clock' },
+    { id: 5, start: 20500, duration: 2000, label: 'Trigger' },
+    { id: 6, start: 22500, duration: 2200, label: 'Agent 1' },
+    { id: 7, start: 24700, duration: 2200, label: 'Agent 2' },
+    { id: 8, start: 26900, duration: 2400, label: 'Agent 3' },
+    { id: 9, start: 29300, duration: 2400, label: 'Agent 4' },
+    { id: 10, start: 31700, duration: 3000, label: '4 Outputs' },
+    { id: 11, start: 34700, duration: 6000, label: 'Before / After' },
+    { id: 12, start: 40700, duration: 4000, label: 'Benefits' },
+    { id: 13, start: 44700, duration: 2300, label: 'Ending' }
+  ];
+  
+  const TOTAL_DURATION = 47000;
+  
+  const scenes = document.querySelectorAll('.scene');
+  const timelineTrack = document.getElementById('timelineTrack');
+  const timelineBar = document.getElementById('timelineBar');
+  const timelineHandle = document.getElementById('timelineHandle');
+  const sceneProgress = document.getElementById('sceneProgress');
+  const restartBtn = document.getElementById('restartBtn');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const clockTime = document.getElementById('clockTime');
+  
+  // State
+  let playStartTime = 0;        // wall-clock time when current play started
+  let pausedAtElapsed = 0;      // elapsed ms when paused
+  let isPlaying = false;
+  let currentSceneId = -1;
+  let rafId = null;
+  
+  function getElapsed() {
+    if (!isPlaying) return pausedAtElapsed;
+    return Math.min(Date.now() - playStartTime, TOTAL_DURATION);
+  }
+  
+  function findSceneByTime(elapsed) {
+    for (let i = TIMELINE.length - 1; i >= 0; i--) {
+      if (elapsed >= TIMELINE[i].start) return TIMELINE[i].id;
+    }
+    return 0;
+  }
+  
+  function activateScene(idx, forceReanimate = false) {
+    if (idx === currentSceneId && !forceReanimate) return;
+    currentSceneId = idx;
+    scenes.forEach(s => s.classList.remove('active'));
+    const target = document.querySelector(`.scene[data-scene="${idx}"]`);
+    if (target) {
+      void target.offsetWidth; // force reflow to restart animation
+      target.classList.add('active');
+    }
+    sceneProgress.textContent = String(idx).padStart(2, '0') + ' / 13';
+  }
+  
+  function updateClockDisplay(elapsed) {
+    // Clock animation runs during scene 4 (18000-20500)
+    const clockSceneStart = 18000;
+    const clockSceneEnd = 20500;
+    if (elapsed >= clockSceneStart && elapsed <= clockSceneEnd) {
+      const progress = (elapsed - clockSceneStart) / (clockSceneEnd - clockSceneStart);
+      const startMin = 8 * 60 + 25;
+      const endMin = 17 * 60;
+      const cur = Math.round(startMin + (endMin - startMin) * progress);
+      const h = Math.floor(cur / 60);
+      const m = cur % 60;
+      if (clockTime) {
+        clockTime.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+      }
+    } else if (elapsed > clockSceneEnd) {
+      if (clockTime) clockTime.textContent = '17:00';
+    } else if (elapsed < clockSceneStart) {
+      if (clockTime) clockTime.textContent = '08:25';
+    }
+  }
+  
+  function tick() {
+    if (!isPlaying) return;
+    
+    const elapsed = getElapsed();
+    const ratio = elapsed / TOTAL_DURATION;
+    
+    // Update timeline visual
+    timelineBar.style.width = (ratio * 100) + '%';
+    timelineHandle.style.left = (ratio * 100) + '%';
+    
+    // Update scene
+    const sceneId = findSceneByTime(elapsed);
+    if (sceneId !== currentSceneId) {
+      activateScene(sceneId);
+    }
+    
+    // Update clock
+    updateClockDisplay(elapsed);
+    
+    // Loop
+    if (elapsed >= TOTAL_DURATION) {
+      seek(0, true);
+      return;
+    }
+    
+    rafId = requestAnimationFrame(tick);
+  }
+  
+  function play() {
+    if (isPlaying) return;
+    isPlaying = true;
+    playStartTime = Date.now() - pausedAtElapsed;
+    playPauseBtn.textContent = '⏸ 一時停止';
+    rafId = requestAnimationFrame(tick);
+  }
+  
+  function pause() {
+    if (!isPlaying) return;
+    isPlaying = false;
+    pausedAtElapsed = Date.now() - playStartTime;
+    if (rafId) cancelAnimationFrame(rafId);
+    playPauseBtn.textContent = '▶ 再生';
+  }
+  
+  function seek(targetMs, autoPlay = true) {
+    targetMs = Math.max(0, Math.min(TOTAL_DURATION, targetMs));
+    pausedAtElapsed = targetMs;
+    
+    // Update visual immediately
+    const ratio = targetMs / TOTAL_DURATION;
+    timelineBar.style.width = (ratio * 100) + '%';
+    timelineHandle.style.left = (ratio * 100) + '%';
+    
+    // Find correct scene and force re-animation
+    const sceneId = findSceneByTime(targetMs);
+    activateScene(sceneId, true);
+    updateClockDisplay(targetMs);
+    
+    if (autoPlay) {
+      isPlaying = false; // ensure play() doesn't bail
+      play();
+    }
+  }
+  
+  function restart() {
+    seek(0, true);
+  }
+  
+  // Event handlers
+  restartBtn.addEventListener('click', restart);
+  
+  playPauseBtn.addEventListener('click', () => {
+    if (isPlaying) pause();
+    else play();
+  });
+  
+  // Click on timeline to seek
+  timelineTrack.addEventListener('click', (e) => {
+    const rect = timelineTrack.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const ratio = x / rect.width;
+    const targetMs = ratio * TOTAL_DURATION;
+    seek(targetMs, true);
+  });
+  
+  // Hover preview on timeline
+  timelineTrack.addEventListener('mousemove', (e) => {
+    const rect = timelineTrack.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const ratio = Math.max(0, Math.min(1, x / rect.width));
+    timelineHandle.style.left = (ratio * 100) + '%';
+  });
+  
+  timelineTrack.addEventListener('mouseleave', () => {
+    // Snap handle back to current playhead
+    const ratio = getElapsed() / TOTAL_DURATION;
+    timelineHandle.style.left = (ratio * 100) + '%';
+  });
+  
+  // Replay button (if exists in scene 13)
+  const replayBtn = document.getElementById('replayBtn');
+  if (replayBtn) {
+    replayBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      restart();
+    });
+  }
+  
+  // Start on load
+  function init() {
+    play();
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+</body>
+</html>
