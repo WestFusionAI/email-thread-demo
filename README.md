@@ -5,6 +5,7 @@
 47秒・13シーン構成のアニメーションデモ。Outlook/Teams から流入する情報を、4体の AI Agent が個人週報→チーム週報→部長サマリー→ボール俯瞰表へ自動整理する流れを視覚化しています。
 
 - 公開URL: https://westfusionai.github.io/email-thread-demo/
+- English version: https://westfusionai.github.io/email-thread-demo/index_en.html
 - インタラクティブ: タイムバークリックでシーン移動 / 一時停止 / 最初から再生
 - 動作環境: Outlook、Teams、Power Automate、Python、SharePoint
 - 運用サイクル: 毎週金曜の退勤前にワンクリックで週次バッチを実行し、AI レポート 4 種を生成(週 1 回運用)
